@@ -177,6 +177,7 @@ func newTestDiver() *testDriver {
 						IP:       "192.168.5.1",
 						Hostname: hostName,
 						TargetRef: &corev1.ObjectReference{
+							Kind: "Pod",
 							Name: "one",
 						},
 					},
@@ -184,6 +185,7 @@ func newTestDiver() *testDriver {
 						IP:       "192.168.5.2",
 						NodeName: &nodeName,
 						TargetRef: &corev1.ObjectReference{
+							Kind: "Pod",
 							Name: "two",
 						},
 					},
@@ -192,6 +194,7 @@ func newTestDiver() *testDriver {
 					{
 						IP: "10.253.6.1",
 						TargetRef: &corev1.ObjectReference{
+							Kind: "Pod",
 							Name: "not-ready",
 						},
 					},

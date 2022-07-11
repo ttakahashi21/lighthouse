@@ -88,6 +88,11 @@ func (c *globalIngressIPCache) applyToCache(obj *unstructured.Unstructured,
 	case HeadlessServicePod:
 		name, _, _ := unstructured.NestedString(obj.Object, "spec", "podRef", "name")
 		apply(&c.byPod, c.key(obj.GetNamespace(), name), obj)
+	case HeadlessServiceEndpoints:
+		annotations, _, _ := unstructured.NestedStringMap(obj.Object, "metadata", "annotations")
+		if ip, ok := annotations["submariner.io/headless-svc-endpoints-ip"]; ok {
+			apply(&c.byEndpoints, c.key(obj.GetNamespace(), ip), obj)
+		}
 	}
 }
 
@@ -97,6 +102,10 @@ func (c *globalIngressIPCache) getForService(namespace, name string) (*unstructu
 
 func (c *globalIngressIPCache) getForPod(namespace, name string) (*unstructured.Unstructured, bool) {
 	return c.get(&c.byPod, namespace, name)
+}
+
+func (c *globalIngressIPCache) getForEndpoints(namespace, ip string) (*unstructured.Unstructured, bool) {
+	return c.get(&c.byEndpoints, namespace, ip)
 }
 
 func (c *globalIngressIPCache) get(from *sync.Map, namespace, name string) (*unstructured.Unstructured, bool) {
