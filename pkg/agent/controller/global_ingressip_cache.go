@@ -89,8 +89,7 @@ func (c *globalIngressIPCache) applyToCache(obj *unstructured.Unstructured,
 		name, _, _ := unstructured.NestedString(obj.Object, "spec", "podRef", "name")
 		apply(&c.byPod, c.key(obj.GetNamespace(), name), obj)
 	case HeadlessServiceEndpoints:
-		annotations, _, _ := unstructured.NestedStringMap(obj.Object, "metadata", "annotations")
-		if ip, ok := annotations["submariner.io/headless-svc-endpoints-ip"]; ok {
+		if ip, ok := obj.GetAnnotations()["submariner.io/headless-svc-endpoints-ip"]; ok {
 			apply(&c.byEndpoints, c.key(obj.GetNamespace(), ip), obj)
 		}
 	}

@@ -254,13 +254,13 @@ func (t *testDriver) newHeadlessGlobalIngressIP(name, ip string) *unstructured.U
 	return ingressIP
 }
 
-func (t *testDriver) newHeadlessGlobalIngressIPForHeadlessServiceWithoutSelector(name, ip, endpointIP string) *unstructured.Unstructured {
+func (t *testDriver) newHeadlessGlobalIngressIPForEndpointIP(name, ip, endpointIP string) *unstructured.Unstructured {
 	ingressIP := t.newGlobalIngressIP("ep"+"-"+name+"-"+endpointIP, ip)
 	Expect(unstructured.SetNestedField(ingressIP.Object, controller.HeadlessServiceEndpoints, "spec", "target")).To(Succeed())
 	Expect(unstructured.SetNestedField(ingressIP.Object, name, "spec", "serviceRef", "name")).To(Succeed())
 
 	annotations := map[string]string{"submariner.io/headless-svc-endpoints-ip": endpointIP}
-	Expect(unstructured.SetNestedStringMap(ingressIP.Object, annotations, "metadata", "annotations")).To(Succeed())
+	ingressIP.SetAnnotations(annotations)
 
 	return ingressIP
 }
@@ -476,7 +476,7 @@ func (c *cluster) awaitEndpointSlice(t *testDriver) *discovery.EndpointSlice {
 		[]*string{}, []*string{})
 }
 
-func (c *cluster) awaitEndpointSliceForServiceWithoutSelector(t *testDriver) {
+func (c *cluster) awaitEndpointSliceForEndpointIP(t *testDriver) {
 	awaitEndpointSlice(c.localEndpointSliceClient, t.endpoints, t.service, t.service.Namespace, t.endpointGlobalIPs,
 		[]*string{&host1, &host2, &host3}, []*string{nil, nil, nil})
 }
@@ -546,10 +546,10 @@ func (t *testDriver) awaitEndpointSlice() {
 	t.cluster2.awaitEndpointSlice(t)
 }
 
-func (t *testDriver) awaitEndpointSliceForServiceWithoutSelector() {
+func (t *testDriver) awaitEndpointSliceForEndpointIP() {
 	t.awaitBrokerEndpointSliceForServiceWithoutSelector()
-	t.cluster1.awaitEndpointSliceForServiceWithoutSelector(t)
-	t.cluster2.awaitEndpointSliceForServiceWithoutSelector(t)
+	t.cluster1.awaitEndpointSliceForEndpointIP(t)
+	t.cluster2.awaitEndpointSliceForEndpointIP(t)
 }
 
 func (t *testDriver) awaitUpdatedEndpointSlice(expectedIPs []string) {
@@ -610,11 +610,11 @@ func (t *testDriver) createEndpointIngressIPs() {
 	t.createGlobalIngressIP(t.newHeadlessGlobalIngressIP("not-ready", globalIP3))
 }
 
-func (t *testDriver) createEndpointIngressIPsForHeadlessServiceWithoutSelector() {
+func (t *testDriver) createEndpointIngressIPsForEndpointIP() {
 	t.endpointGlobalIPs = []string{globalIP1, globalIP2, globalIP3}
-	t.createGlobalIngressIP(t.newHeadlessGlobalIngressIPForHeadlessServiceWithoutSelector("one", globalIP1, epIP1))
-	t.createGlobalIngressIP(t.newHeadlessGlobalIngressIPForHeadlessServiceWithoutSelector("two", globalIP2, epIP2))
-	t.createGlobalIngressIP(t.newHeadlessGlobalIngressIPForHeadlessServiceWithoutSelector("not-ready", globalIP3, epIP3))
+	t.createGlobalIngressIP(t.newHeadlessGlobalIngressIPForEndpointIP("one", globalIP1, epIP1))
+	t.createGlobalIngressIP(t.newHeadlessGlobalIngressIPForEndpointIP("two", globalIP2, epIP2))
+	t.createGlobalIngressIP(t.newHeadlessGlobalIngressIPForEndpointIP("not-ready", globalIP3, epIP3))
 }
 
 func (t *testDriver) awaitNoServiceImport(client dynamic.ResourceInterface) {

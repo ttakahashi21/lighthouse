@@ -177,12 +177,12 @@ var _ = Describe("Globalnet enabled", func() {
 
 		Context("and it has a global IP for all endpoint addresses", func() {
 			BeforeEach(func() {
-				t.createEndpointIngressIPsForHeadlessServiceWithoutSelector()
+				t.createEndpointIngressIPsForEndpointIP()
 			})
 
 			It("should sync a ServiceImport and EndpointSlice with the global IPs", func() {
 				t.awaitHeadlessServiceImport()
-				t.awaitEndpointSliceForServiceWithoutSelector()
+				t.awaitEndpointSliceForEndpointIP()
 			})
 		})
 
@@ -191,10 +191,10 @@ var _ = Describe("Globalnet enabled", func() {
 				time.Sleep(time.Millisecond * 300)
 				t.awaitNoEndpointSlice(t.cluster1.localEndpointSliceClient)
 
-				t.createEndpointIngressIPsForHeadlessServiceWithoutSelector()
+				t.createEndpointIngressIPsForEndpointIP()
 
 				t.awaitHeadlessServiceImport()
-				t.awaitEndpointSliceForServiceWithoutSelector()
+				t.awaitEndpointSliceForEndpointIP()
 			})
 		})
 	})
