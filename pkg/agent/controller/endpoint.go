@@ -275,15 +275,28 @@ func allAddressesIPv6(addresses []corev1.EndpointAddress) bool {
 
 func (e *EndpointController) getIP(address *corev1.EndpointAddress) string {
 	if e.isHeadless && e.globalIngressIPCache != nil {
-		obj, found := e.globalIngressIPCache.getForPod(e.serviceImportSourceNameSpace, address.TargetRef.Name)
+		var (
+			obj   *unstructured.Unstructured
+			found bool
+			ip    string
+		)
 
-		var ip string
+		if address.TargetRef != nil && address.TargetRef.Kind == "Pod" {
+			obj, found = e.globalIngressIPCache.getForPod(e.serviceImportSourceNameSpace, address.TargetRef.Name)
+		} else {
+			obj, found = e.globalIngressIPCache.getForEndpoints(e.serviceImportSourceNameSpace, address.IP)
+		}
+
 		if found {
 			ip, _, _ = unstructured.NestedString(obj.Object, "status", "allocatedIP")
 		}
 
 		if ip == "" {
-			klog.Infof("GlobalIP for EndpointAddress %q is not allocated yet", address.TargetRef.Name)
+			if address.TargetRef != nil {
+				klog.Infof("GlobalIP for EndpointAddress %q is not allocated yet", address.TargetRef.Name)
+			} else {
+				klog.Infof("GlobalIP for EndpointAddress %q is not allocated yet", address.IP)
+			}
 		}
 
 		return ip
